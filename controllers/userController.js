@@ -1,5 +1,6 @@
 import {User} from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export const register = async (req, res) => {
     try {
@@ -50,8 +51,37 @@ export const login = async (req, res) => {
         if(!isPasswordMatch){
             return res.status(400).json({success:false,message:"password incorect try again"});
         }
-        
+
+        const tokenData = {
+            userId:user._id
+        };
+        const token = await jwt.sign(tokenData,process.env.SECRET_KEY,{expiresIn:'1d'});
+        return res.status(200).cookie("token",token,{maxAge:24*60*60*1000,httoOnly:true,sameSites:'strict'}).json({
+         _id:user._id,
+          fullname:user.fullname,
+            userName:user.userName,
+            profilePhoto:user.profilePhoto,
+        })
+
     } catch (error) {
         console.log(error);
+    }
+};
+
+export const logout = (req,res)=>{
+    try {
+        return res.status(200).cookie("token","",{maxAge:0}).json({message:"logged out successfully"});
+    } catch (error) {
+        console.log(error)
+    }
+};
+
+export const getOtherUsers = async(req,res)=>{
+    try {
+        const loggedInUsersId = req.id;
+        const otherUsers = await User.find({_id:{$ne:loggedInUsersId}}).select("-password");
+        return res.status(200).json(otherUsers);
+    } catch (error) {
+      console.log(error); 
     }
 }
