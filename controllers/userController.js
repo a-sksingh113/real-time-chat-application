@@ -22,12 +22,12 @@ export const register = async (req, res) => {
 const femaleProfilePhoto = `api.multiavatar.com/zoe.svg?userName=${userName}`
 
 await User.create({
-    fullname:fullname,
-    userName:userName,
-    password:hashedPassword,
+    fullname,
+    userName,
+    password,
     confirmPassword:hashedPassword,
     profilePhoto:gender === "male"?maleProfilePhoto:femaleProfilePhoto,
-    gender:gender,
+    gender,
 });
 return res.status(201).json({success:true,message:"account created succesfully"})
 
